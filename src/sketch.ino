@@ -49,10 +49,11 @@ void print_signal() {
       Serial.print(signal[i]);
       Serial.print(", ");
     } else {
-      Serial.println(signal[i]);
+      Serial.print(signal[i]);
+      Serial.println(",");
     }
   }
-  Serial.println("0}");
+  Serial.println("0};");
 }
 
 void loop(void) {
