@@ -10,7 +10,7 @@ take a look at the [Arduino IRremote][1] project.
 
 ## Code example
 
-```ino
+```c
 #include <irdebug.h>
 
 void setup(void) {

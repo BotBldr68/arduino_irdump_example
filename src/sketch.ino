@@ -25,7 +25,7 @@
 
 void setup(void) {
   Serial.begin(9600);
-  Serial.println("Point a infrared remote controller to your sensor and test it.");
+  Serial.println("Point an infrared remote controller to your sensor and press any button.");
 }
 
 unsigned int signal[128];
