@@ -1,6 +1,14 @@
-#define IR_RECV_PIN 2
-#define SIGNAL_MAX_LENGTH 9500
-#define SIGNAL_MIN_LENGTH 400
+#ifndef IR_RECV_PIN
+  #define IR_RECV_PIN           2
+#endif
+
+#ifndef IR_RECV_PIN
+  #define IR_SIGNAL_MAX_LENGTH  2500
+#endif
+
+#ifndef IR_RECV_PIN
+  #define IR_SIGNAL_MIN_LENGTH  300
+#endif
 
 unsigned int signal[128];
 unsigned int signal_i;
@@ -22,7 +30,7 @@ void setup(void) {
 }
 
 void next_slot() {
-  if (signal_l > SIGNAL_MIN_LENGTH) {
+  if (signal_l > IR_SIGNAL_MIN_LENGTH) {
     signal[signal_i] = signal_l;
     signal_l = 0;
     signal_i++;
@@ -82,7 +90,7 @@ void loop(void) {
         }
       }
       signal_l = signal_l + diff;
-      if (signal_l > SIGNAL_MAX_LENGTH) {
+      if (signal_l > IR_SIGNAL_MAX_LENGTH) {
         stop_capture();
         print_signal();
       }
