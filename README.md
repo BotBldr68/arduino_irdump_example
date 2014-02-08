@@ -4,18 +4,24 @@ The irdebug library for the Arduino attempts to provide simple functions to
 play with raw infrared signals, like those emitted by remote controls in your
 living room.
 
+By default, the IR sensor's data (like a TSOP 18xx) is expected to be wired to
+the Arduino's pin #2; while an IR led is expected to be attached to the pin #3.
+
 Please note that this library focuses on raw signals only, if you're looking
 for a library with better understanding of many different protocols, you should
 take a look at the [Arduino IRremote][1] project.
 
 ## Code example
 
+Let's suppose we have the following chunk of code that makes use of the
+`irdebug.h` library.
+
 ```c
 #include <irdebug.h>
 
 void setup(void) {
   Serial.begin(9600);
-  Serial.println("Point a infrared remote controller to your sensor and test it.");
+  Serial.println("Point an infrared remote controller to your sensor and press any button.");
 }
 
 unsigned int signal[128];
@@ -39,6 +45,52 @@ void loop(void) {
   }
 
 }
+```
+
+If we press the center button of an Apple Remote controller, we'll see a read
+like this in our serial console:
+
+```
+Point an infrared remote controller to your sensor and press any button.
+A wild signal appeared!
+unsigned int signal[] = {
+  9140, 4440,
+  600, 520,
+  616, 1628,
+  596, 1628,
+  596, 1648,
+  600, 496,
+  620, 1624,
+  620, 1632,
+  592, 1632,
+  596, 1628,
+  596, 1648,
+  600, 1624,
+  600, 536,
+  600, 516,
+  600, 520,
+  616, 520,
+  596, 1628,
+  616, 520,
+  600, 1624,
+  600, 536,
+  600, 516,
+  600, 536,
+  600, 520,
+  616, 520,
+  596, 520,
+  616, 1628,
+  600, 1624,
+  600, 1624,
+  620, 1624,
+  604, 500,
+  616, 540,
+  592, 1632,
+  596, 1648,
+  600, 0};
+Waiting 5s.
+Replaying captured signal.
+Done.
 ```
 
 ## How to install
