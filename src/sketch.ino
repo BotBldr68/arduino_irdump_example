@@ -1,101 +1,51 @@
-#ifndef IR_RECV_PIN
-  #define IR_RECV_PIN           2
-#endif
+/*
+  Copyright (c) 2014 José Carlos Nieto, https://menteslibres.net/xiam
 
-#ifndef IR_RECV_PIN
-  #define IR_SIGNAL_MAX_LENGTH  2500
-#endif
+  Permission is hereby granted, free of charge, to any person obtaining
+  a copy of this software and associated documentation files (the
+  "Software"), to deal in the Software without restriction, including
+  without limitation the rights to use, copy, modify, merge, publish,
+  distribute, sublicense, and/or sell copies of the Software, and to
+  permit persons to whom the Software is furnished to do so, subject to
+  the following conditions:
 
-#ifndef IR_RECV_PIN
-  #define IR_SIGNAL_MIN_LENGTH  300
-#endif
+  The above copyright notice and this permission notice shall be
+  included in all copies or substantial portions of the Software.
 
-unsigned int signal[128];
-unsigned int signal_i;
-unsigned int signal_l;
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+  LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+  OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
 
-unsigned long time;
-unsigned long curr;
-unsigned long diff;
-bool capturing;
-bool signal_on;
+#include <irdebug.h>
 
 void setup(void) {
-  pinMode(IR_RECV_PIN, INPUT);
-
   Serial.begin(9600);
-  Serial.println("Go and test your IR controller.");
-
-  stop_capture();
+  Serial.println("Point a infrared remote controller to your sensor and test it.");
 }
 
-void next_slot() {
-  if (signal_l > IR_SIGNAL_MIN_LENGTH) {
-    signal[signal_i] = signal_l;
-    signal_l = 0;
-    signal_i++;
-  }
-}
-
-void start_capture() {
-  capturing = true;
-  signal_l  = 0;
-  signal_i  = 0;
-}
-
-void stop_capture() {
-  capturing = false;
-  time = 0;
-}
-
-void print_signal() {
-  int i;
-  Serial.println("int signal[] = {");
-  for (i = 0; i < signal_i; i++) {
-    if (i%2 == 0) {
-      Serial.print("\t");
-      Serial.print(signal[i]);
-      Serial.print(", ");
-    } else {
-      Serial.print(signal[i]);
-      Serial.println(",");
-    }
-  }
-  Serial.println("0};");
-}
+unsigned int signal[128];
 
 void loop(void) {
-  curr = micros();
+  bool captured;
+  captured = irdebug_capture_signal(signal);
 
-  if (time > 0) {
-    //signal_on = (!(PIND & (1 << IR_RECV_PIN))); // Fast.
-    signal_on = (digitalRead(IR_RECV_PIN) == LOW); // Good enough (and portable).
+  if (captured) {
+    Serial.println("A wild signal appeared!");
 
-    diff = curr - time;
+    irdebug_print_signal(signal);
 
-    if (capturing == false) {
-      // Not capturing.
-      if (signal_on) {
-        start_capture();
-      }
-    } else {
-      // On capture.
-      if (signal_on) {
-        if (signal_i%2 != 0) {
-          next_slot();
-        }
-      } else {
-        if (signal_i%2 == 0) {
-          next_slot();
-        }
-      }
-      signal_l = signal_l + diff;
-      if (signal_l > IR_SIGNAL_MAX_LENGTH) {
-        stop_capture();
-        print_signal();
-      }
-    }
+    Serial.println("Waiting 5s.");
+    delay(5000);
+
+    Serial.println("Replaying captured signal.");
+    irdebug_send(signal, 38);
+
+    Serial.println("Done.");
   }
 
-  time = curr;
 }
