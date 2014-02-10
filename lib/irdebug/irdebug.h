@@ -94,7 +94,7 @@ unsigned int irdebug_signal_l;
 
 unsigned long irdebug_time;
 unsigned long irdebug_curr;
-unsigned long irdebug_diff;
+unsigned int irdebug_diff;
 
 bool irdebug_capturing;
 bool irdebug_signal_on;
@@ -131,10 +131,15 @@ void irdebug_print_signal(unsigned int *);
 void irdebug_send(unsigned int *, int);
 
 // Attempts to capture a signal.
-bool irdebug_capture_signal(unsigned int *);
+bool irdebug_capture_signal(unsigned int *, int);
+
+// Returns true if the signal B matches signal A within error range.
+bool irdebug_match_signal(unsigned int *, unsigned int *, unsigned int);
 
 void irdebug_next_burst() {
   // Is this signal long enough?
+  // Serial.print("i = ");
+  // Serial.println(irdebug_signal_i);
   if (irdebug_signal_l > IRDEBUG_PULSE_MIN_LENGTH) {
     // Saving current burst/space length to the current buffer's index.
     irdebug_signal[irdebug_signal_i] = irdebug_signal_l;
@@ -164,6 +169,7 @@ void irdebug_stop_capture() {
 void irdebug_init() {
   if (irdebug_initialized == false) {
     irdebug_initialized = true;
+    irdebug_signal_i    = 0;
     pinMode(IRDEBUG_RECV_PIN, INPUT);
     // This is used here just to reset values to their default value.
     irdebug_stop_capture();
@@ -171,7 +177,7 @@ void irdebug_init() {
 }
 
 void irdebug_dump_signal(unsigned int *signal) {
-  int i;
+  unsigned int i;
   for (i = 0; i < irdebug_signal_i; i++) {
     signal[i] = irdebug_signal[i];
   };
@@ -179,7 +185,7 @@ void irdebug_dump_signal(unsigned int *signal) {
 }
 
 void irdebug_print_signal(unsigned int *signal) {
-  int i;
+  unsigned int i;
   Serial.println("unsigned int signal[] = {");
   for (i = 0; signal[i] > 0; i++) {
     if (i%2 == 0) {
@@ -196,7 +202,7 @@ void irdebug_print_signal(unsigned int *signal) {
 
 // Taken from https://github.com/shirriff/Arduino-IRremote
 void irdebug_send(unsigned int *buf, int khz) {
-  int i;
+  unsigned int i;
   irdebug_enable_irout(khz);
   for (i = 0; buf[i] > 0; i++) {
     if (i%2 == 0) {
@@ -225,7 +231,7 @@ void irdebug_enable_irout(int khz) {
   TIMER_CONFIG_KHZ(khz);
 }
 
-bool irdebug_capture_signal(unsigned int *signal) {
+bool irdebug_capture_signal(unsigned int *signal, int max_length) {
   bool captured = false;
 
   irdebug_init();
@@ -252,17 +258,44 @@ bool irdebug_capture_signal(unsigned int *signal) {
           irdebug_next_burst();
         }
       }
-      irdebug_signal_l = irdebug_signal_l + irdebug_diff;
-      if (irdebug_signal_l > IRDEBUG_PULSE_MAX_LENGTH) {
+      if (irdebug_signal_i < max_length) {
+        irdebug_signal_l = irdebug_signal_l + irdebug_diff;
+        if (irdebug_signal_l > IRDEBUG_PULSE_MAX_LENGTH) {
+          irdebug_stop_capture();
+          irdebug_dump_signal(signal);
+          captured = true;
+        }
+      } else {
         irdebug_stop_capture();
-        irdebug_dump_signal(signal);
-        captured = true;
       }
     }
   }
 
   irdebug_time = irdebug_curr;
   return captured;
+}
+
+bool irdebug_match_signal(unsigned int *a, unsigned int *b, unsigned int error) {
+  unsigned int i;
+  unsigned int diff;
+
+  for (i = 0; i < IRDEBUG_SIGNAL_BUFSIZE; i++) {
+    if (a[i] == 0 || b[i] == 0) {
+      break;
+    }
+
+    if (a[i] > b[i]) {
+      diff = a[i] - b[i];
+    } else {
+      diff = b[i] - a[i];
+    }
+
+    if (diff > error) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 #endif
