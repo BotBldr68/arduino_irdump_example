@@ -1,11 +1,12 @@
-# irdebug.h
+# IR debugging library (irdebug.h) for Arduino
 
 The irdebug library for the Arduino attempts to provide simple functions to
 play with raw infrared signals, like those emitted by remote controls in your
 living room.
 
 By default, the IR sensor's data (like a TSOP 18xx) is expected to be wired to
-the Arduino's pin #2; while an IR led is expected to be attached to the pin #3.
+the Arduino's pin #2; while an IR led is expected to be attached to the pin #3,
+see the diagrams.
 
 Please note that this library focuses on raw signals only, if you're looking
 for a library with better understanding of many different protocols, you should
@@ -99,6 +100,16 @@ Done.
 	 example: `sudo cp -r lib/irdebug /usr/share/arduino/libraries/`.
 2. Include the `irdebug.h` file into your main Arduino code, for example
 	 `#include <irdebug.h>`.
+
+## Diagrams
+
+### Schematic
+
+![Schematic diagram](./res/irdebug_schem_lo.png)
+
+### Breadboard
+
+![Breadboard diagram](./res/irdebug_bb_lo.png)
 
 ## License
 
