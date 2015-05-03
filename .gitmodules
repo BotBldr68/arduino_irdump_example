@@ -1,0 +1,3 @@
+[submodule "lib/arduino_irdump"]
+	path = lib/arduino_irdump
+	url = https://github.com/makerworkshop/arduino_irdump.git
