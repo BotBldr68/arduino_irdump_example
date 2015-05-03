@@ -22,6 +22,9 @@
 #include <IRDump.h>
 
 #define PIN_IR_INPUT 2
+#define PIN_IR_OUTPUT 3
+
+#define SIGNAL_MAX_LENGTH 128
 
 IRDump *irdumper;
 unsigned int *signal;
@@ -50,7 +53,7 @@ void setup(void) {
   Serial.begin(115200);
   Serial.println("Point an infrared remote controller to your sensor and press any button.");
 
-  signal = (unsigned int *)malloc(sizeof(unsigned int)*128);
+  signal = (unsigned int *)malloc(sizeof(unsigned int)*SIGNAL_MAX_LENGTH);
   irdumper = new IRDump();
 
   pinMode(PIN_IR_INPUT, INPUT);
@@ -61,10 +64,20 @@ void loop(void) {
   bool captured;
 
   // Tuned to capture signals from the Apple TV Remote.
-  captured = irdumper->Capture(PIN_IR_INPUT, &signal, 128, 9200);
+  captured = irdumper->Capture(PIN_IR_INPUT, &signal, SIGNAL_MAX_LENGTH, 9200);
 
   if (captured) {
+    Serial.println("A wild IR signal appeared!");
     printSignal(signal);
+
+    Serial.println("Waiting 5 secs before replaying...");
+    delay(5000);
+
+    Serial.println("Replaying captured signal...");
+    irdumper->Emit(PIN_IR_OUTPUT, &signal, 38);
+
+    delay(1000);
+    Serial.println("Done");
   }
 
 }
